@@ -1,107 +1,73 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b49c3786-f8c8-4cf7-960c-6353aec0ec47",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import streamlit as st\n",
-    "import pickle\n",
-    "\n",
-    "# Load model\n",
-    "with open(\"car_price_model.pkl\", \"rb\") as file:\n",
-    "    model = pickle.load(file)\n",
-    "\n",
-    "st.title(\"Car Selling Price Prediction\")\n",
-    "\n",
-    "# -------- NUMERIC INPUTS --------\n",
-    "km_driven = st.number_input(\"Kilometers Driven\", min_value=0)\n",
-    "seats = st.number_input(\"Number of Seats\", min_value=1, max_value=10)\n",
-    "years_old = st.number_input(\"Car Age (Years)\", min_value=0)\n",
-    "mileage_value = st.number_input(\"Mileage (km/l)\")\n",
-    "engine_value = st.number_input(\"Engine (CC)\")\n",
-    "max_power_value = st.number_input(\"Max Power (bhp)\")\n",
-    "\n",
-    "# -------- OWNER (ORDINAL) --------\n",
-    "owner = st.selectbox(\n",
-    "    \"Owner\",\n",
-    "    [\"First Owner\", \"Second Owner\", \"Third Owner\", \"Fourth & Above Owner\"]\n",
-    ")\n",
-    "\n",
-    "owner_map = {\n",
-    "    \"First Owner\": 0,\n",
-    "    \"Second Owner\": 1,\n",
-    "    \"Third Owner\": 2,\n",
-    "    \"Fourth & Above Owner\": 3\n",
-    "}\n",
-    "owner_encoded = owner_map[owner]\n",
-    "\n",
-    "# -------- FUEL TYPE (ONE-HOT) --------\n",
-    "fuel = st.selectbox(\"Fuel Type\", [\"Petrol\", \"Diesel\", \"LPG\", \"CNG\"])\n",
-    "\n",
-    "fuel_Petrol = 1 if fuel == \"Petrol\" else 0\n",
-    "fuel_Diesel = 1 if fuel == \"Diesel\" else 0\n",
-    "fuel_LPG = 1 if fuel == \"LPG\" else 0\n",
-    "fuel_CNG = 1 if fuel == \"CNG\" else 0\n",
-    "\n",
-    "# -------- SELLER TYPE (ONE-HOT) --------\n",
-    "seller_type = st.selectbox(\n",
-    "    \"Seller Type\",\n",
-    "    [\"Individual\", \"Trustmark Dealer\"]\n",
-    ")\n",
-    "\n",
-    "seller_type_Individual = 1 if seller_type == \"Individual\" else 0\n",
-    "seller_type_Trustmark_Dealer = 1 if seller_type == \"Trustmark Dealer\" else 0\n",
-    "\n",
-    "# -------- TRANSMISSION (ONE-HOT) --------\n",
-    "transmission = st.selectbox(\"Transmission\", [\"Manual\", \"Automatic\"])\n",
-    "transmission_Manual = 1 if transmission == \"Manual\" else 0\n",
-    "\n",
-    "# -------- PREDICTION --------\n",
-    "if st.button(\"Predict Selling Price\"):\n",
-    "    input_data = [[\n",
-    "        km_driven,\n",
-    "        owner_encoded,\n",
-    "        seats,\n",
-    "        years_old,\n",
-    "        mileage_value,\n",
-    "        engine_value,\n",
-    "        max_power_value,\n",
-    "        fuel_Diesel,\n",
-    "        fuel_LPG,\n",
-    "        fuel_Petrol,\n",
-    "        fuel_CNG,\n",
-    "        seller_type_Individual,\n",
-    "        seller_type_Trustmark_Dealer,\n",
-    "        transmission_Manual\n",
-    "    ]]\n",
-    "\n",
-    "    prediction = model.predict(input_data)\n",
-    "    st.success(f\"Predicted Selling Price: ₹ {prediction[0]:,.2f}\")\n"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python [conda env:base] *",
-   "language": "python",
-   "name": "conda-base-py"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.13.5"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
+import streamlit as st
+import pickle
+
+# Load model
+with open("car_price_model.pkl", "rb") as file:
+    model = pickle.load(file)
+
+st.title("Car Selling Price Prediction")
+
+# -------- NUMERIC INPUTS --------
+km_driven = st.number_input("Kilometers Driven", min_value=0)
+seats = st.number_input("Number of Seats", min_value=1, max_value=10)
+years_old = st.number_input("Car Age (Years)", min_value=0)
+mileage_value = st.number_input("Mileage (km/l)")
+engine_value = st.number_input("Engine (CC)")
+max_power_value = st.number_input("Max Power (bhp)")
+
+# -------- OWNER (ORDINAL) --------
+owner = st.selectbox(
+    "Owner",
+    ["First Owner", "Second Owner", "Third Owner", "Fourth & Above Owner"]
+)
+
+owner_map = {
+    "First Owner": 0,
+    "Second Owner": 1,
+    "Third Owner": 2,
+    "Fourth & Above Owner": 3
 }
+owner_encoded = owner_map[owner]
+
+# -------- FUEL TYPE (ONE-HOT) --------
+fuel = st.selectbox("Fuel Type", ["Petrol", "Diesel", "LPG", "CNG"])
+
+fuel_Petrol = 1 if fuel == "Petrol" else 0
+fuel_Diesel = 1 if fuel == "Diesel" else 0
+fuel_LPG = 1 if fuel == "LPG" else 0
+fuel_CNG = 1 if fuel == "CNG" else 0
+
+# -------- SELLER TYPE (ONE-HOT) --------
+seller_type = st.selectbox(
+    "Seller Type",
+    ["Individual", "Trustmark Dealer"]
+)
+
+seller_type_Individual = 1 if seller_type == "Individual" else 0
+seller_type_Trustmark_Dealer = 1 if seller_type == "Trustmark Dealer" else 0
+
+# -------- TRANSMISSION (ONE-HOT) --------
+transmission = st.selectbox("Transmission", ["Manual", "Automatic"])
+transmission_Manual = 1 if transmission == "Manual" else 0
+
+# -------- PREDICTION --------
+if st.button("Predict Selling Price"):
+    input_data = [[
+        km_driven,
+        owner_encoded,
+        seats,
+        years_old,
+        mileage_value,
+        engine_value,
+        max_power_value,
+        fuel_Diesel,
+        fuel_LPG,
+        fuel_Petrol,
+        fuel_CNG,
+        seller_type_Individual,
+        seller_type_Trustmark_Dealer,
+        transmission_Manual
+    ]]
+
+    prediction = model.predict(input_data)
+    st.success(f"Predicted Selling Price: ₹ {prediction[0]:,.2f}")
