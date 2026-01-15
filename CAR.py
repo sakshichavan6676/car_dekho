@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 
 # Load model
-with open("car.pkl", "rb") as file:
+with open("model.pkl", "rb") as file:
     model = pickle.load(file)
 
 st.title("Car Selling Price Prediction")
