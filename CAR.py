@@ -3,7 +3,7 @@ import pickle
 
 # Load model
 with open("car.pkl", "rb") as s:
-    car = pickle.load(s)
+    model = pickle.load(s)
 
 st.title("Car Selling Price Prediction")
 
