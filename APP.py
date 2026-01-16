@@ -1,73 +1,73 @@
 import streamlit as st
-import pickle
+import pandas as pd
+import joblib
 
-# Load model
-with open("car_price_model.pkl", "rb") as file:
-    model = pickle.load(file)
+# ===============================
+# Load trained artifacts
+# ===============================
+model = joblib.load("model.pkl")
+owner_encoder = joblib.load("owner_encoder.pkl")
+feature_columns = joblib.load("feature_columns.pkl")
 
-st.title("Car Selling Price Prediction")
+st.title("Car Price Prediction")
 
-# -------- NUMERIC INPUTS --------
-km_driven = st.number_input("Kilometers Driven", min_value=0)
-seats = st.number_input("Number of Seats", min_value=1, max_value=10)
-years_old = st.number_input("Car Age (Years)", min_value=0)
-mileage_value = st.number_input("Mileage (km/l)")
-engine_value = st.number_input("Engine (CC)")
-max_power_value = st.number_input("Max Power (bhp)")
-
-# -------- OWNER (ORDINAL) --------
+# ===============================
+# User Inputs
+# ===============================
 owner = st.selectbox(
-    "Owner",
-    ["First Owner", "Second Owner", "Third Owner", "Fourth & Above Owner"]
+    "Owner Type",
+    [
+        'First Owner',
+        'Second Owner',
+        'Third Owner',
+        'Fourth & Above Owner',
+        'Test Drive Car'
+    ]
 )
 
-owner_map = {
-    "First Owner": 0,
-    "Second Owner": 1,
-    "Third Owner": 2,
-    "Fourth & Above Owner": 3
-}
-owner_encoded = owner_map[owner]
+fuel = st.selectbox("Fuel Type", ['Petrol', 'Diesel', 'CNG'])
+seller_type = st.selectbox("Seller Type", ['Individual', 'Dealer'])
+transmission = st.selectbox("Transmission", ['Manual', 'Automatic'])
 
-# -------- FUEL TYPE (ONE-HOT) --------
-fuel = st.selectbox("Fuel Type", ["Petrol", "Diesel", "LPG", "CNG"])
+km_driven = st.number_input("KM Driven", min_value=0)
+seats = st.number_input("Seats", min_value=2, max_value=10)
+yeard_old = st.number_input("Car Age (Years)", min_value=0)
+mileage_value = st.number_input("Mileage")
+engine_value = st.number_input("Engine CC")
+max_power_value = st.number_input("Max Power")
 
-fuel_Petrol = 1 if fuel == "Petrol" else 0
-fuel_Diesel = 1 if fuel == "Diesel" else 0
-fuel_LPG = 1 if fuel == "LPG" else 0
-fuel_CNG = 1 if fuel == "CNG" else 0
+# ===============================
+# Create input DataFrame
+# ===============================
+input_df = pd.DataFrame([{
+    'owner': owner,
+    'fuel': fuel,
+    'seller_type': seller_type,
+    'transmission': transmission
+}])
 
-# -------- SELLER TYPE (ONE-HOT) --------
-seller_type = st.selectbox(
-    "Seller Type",
-    ["Individual", "Trustmark Dealer"]
-)
+# ===============================
+# Apply encodings (NO fit)
+# ===============================
+input_df['owner'] = owner_encoder.transform(input_df[['owner']])
 
-seller_type_Individual = 1 if seller_type == "Individual" else 0
-seller_type_Trustmark_Dealer = 1 if seller_type == "Trustmark Dealer" else 0
+input_df = pd.get_dummies(input_df)
 
-# -------- TRANSMISSION (ONE-HOT) --------
-transmission = st.selectbox("Transmission", ["Manual", "Automatic"])
-transmission_Manual = 1 if transmission == "Manual" else 0
+# ===============================
+# Add missing columns
+# ===============================
+for col in feature_columns:
+    if col not in input_df.columns:
+        input_df[col] = 0
 
-# -------- PREDICTION --------
-if st.button("Predict Selling Price"):
-    input_data = [[
-        km_driven,
-        owner_encoded,
-        seats,
-        years_old,
-        mileage_value,
-        engine_value,
-        max_power_value,
-        fuel_Diesel,
-        fuel_LPG,
-        fuel_Petrol,
-        fuel_CNG,
-        seller_type_Individual,
-        seller_type_Trustmark_Dealer,
-        transmission_Manual
-    ]]
+# ===============================
+# Keep correct column order
+# ===============================
+input_df = input_df[feature_columns]
 
-    prediction = model.predict(input_data)
-    st.success(f"Predicted Selling Price: ₹ {prediction[0]:,.2f}")
+# ===============================
+# Prediction
+# ===============================
+if st.button("Predict Price"):
+    prediction = model.predict(input_df)
+    st.success(f"💰 Estimated Price: ₹ {prediction[0]:,.2f}")
